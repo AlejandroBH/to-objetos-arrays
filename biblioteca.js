@@ -55,7 +55,7 @@ const usuarios = [
       {
         idLibro: 2,
         descripcion: "Clean Code",
-        fechaEntrega: new Date("2025-11-14"),
+        fechaEntrega: new Date("2025-10-10"),
         FechaDevolucion: undefined,
       },
     ],
@@ -120,21 +120,39 @@ const biblioteca = {
 
     return {
       exito: true,
-      mensaje: `Libro "${libro.titulo}" prestado exitosamente`,
+      mensaje: `Libro "${libro.titulo}" prestado exitosamente a ${usuarioEncontrado[0].nombre}`,
     };
   },
 
   // Devolver libro
-  devolver(id) {
-    const libro = libros.find((l) => l.id === id);
+  devolver(idLibro, idUsuario) {
+    const libro = libros.find((l) => l.id === idLibro);
+    const usuarioEncontrado = usuario.buscar(idUsuario);
+
     if (!libro) return { exito: false, mensaje: "Libro no encontrado" };
     if (libro.disponible)
       return { exito: false, mensaje: "Este libro ya está disponible" };
 
+    if (typeof idUsuario !== "number")
+      return { exito: false, mensaje: "ID de usuario no valida" };
+
+    if (usuarioEncontrado.length === 0)
+      return { exito: false, mensaje: "Usuario no encontrado" };
+
+    // Busca y encuentra indice en array de libros prestados
+    const indexLibro = usuarioEncontrado[0].prestamos.findIndex(
+      ({ idLibro, FechaDevolucion }) =>
+        idLibro === idLibro && FechaDevolucion === undefined
+    );
+
+    // Registra la fecha en la que el libro fue devuelto
+    usuarioEncontrado[0].prestamos[indexLibro].FechaDevolucion = new Date();
+
     libro.disponible = true;
+
     return {
       exito: true,
-      mensaje: `Libro "${libro.titulo}" devuelto exitosamente`,
+      mensaje: `Libro "${libro.titulo}" devuelto exitosamente por ${usuarioEncontrado[0].nombre}`,
     };
   },
 
@@ -193,7 +211,8 @@ function omitirAcentos(criterio) {
 console.log("📚 USUARIOS REGISTRADOS:");
 console.log(usuario.obtenerUsuarios());
 
-console.log(biblioteca.prestar(1, 1));
+console.log(biblioteca.prestar(3, 1));
+console.log(biblioteca.devolver(2, 1));
 
 // console.log("\n🔍 BÚSQUEDA 'Juan':");
 // usuario.buscar("Juan").forEach(({ id, nombre, prestamos }) => {
