@@ -49,8 +49,14 @@ const usuarios = [
       {
         idLibro: 1,
         descripcion: "JavaScript: The Good Parts",
-        fechaEntrega: "",
-        FechaDevolucion: "",
+        fechaEntrega: new Date("2025-10-10"),
+        FechaDevolucion: new Date("2025-11-10"),
+      },
+      {
+        idLibro: 2,
+        descripcion: "Clean Code",
+        fechaEntrega: new Date("2025-11-14"),
+        FechaDevolucion: undefined,
       },
     ],
   },
@@ -60,16 +66,16 @@ const usuarios = [
     edad: 42,
     prestamos: [
       {
-        idLibro: 3,
-        descripcion: "The Pragmatic Programmer",
-        fechaEntrega: "",
-        FechaDevolucion: "",
+        idLibro: 5,
+        descripcion: "To Kill a Mockingbird",
+        fechaEntrega: new Date("2025-11-14"),
+        FechaDevolucion: undefined,
       },
     ],
   },
 ];
 
-// Sistema de gestión biblioteca
+// Sistema de gestión (libros)
 const biblioteca = {
   // Obtener libros disponibles
   obtenerDisponibles() {
@@ -89,13 +95,29 @@ const biblioteca = {
   },
 
   // Prestar libro
-  prestar(id) {
-    const libro = libros.find((l) => l.id === id);
+  prestar(idLibro, idUsuario) {
+    const libro = libros.find((l) => l.id === idLibro);
+    const usuarioEncontrado = usuario.buscar(idUsuario);
+
     if (!libro) return { exito: false, mensaje: "Libro no encontrado" };
     if (!libro.disponible)
       return { exito: false, mensaje: "Libro no disponible" };
 
+    if (typeof idUsuario !== "number")
+      return { exito: false, mensaje: "ID de usuario no valida" };
+
+    if (usuarioEncontrado.length === 0)
+      return { exito: false, mensaje: "Usuario no encontrado" };
+
+    usuarioEncontrado[0].prestamos.push({
+      idLibro: libro.id,
+      descripcion: libro.titulo,
+      fechaEntrega: new Date(),
+      FechaDevolucion: undefined,
+    });
+
     libro.disponible = false;
+
     return {
       exito: true,
       mensaje: `Libro "${libro.titulo}" prestado exitosamente`,
@@ -132,6 +154,32 @@ const biblioteca = {
   },
 };
 
+// Sistema de gestión (usuarios)
+const usuario = {
+  // Obtener usuarios
+  obtenerUsuarios() {
+    return usuarios;
+  },
+
+  // Buscar usuario por nombre o id
+  buscar(criterio) {
+    let termino;
+
+    if (criterio === undefined)
+      throw new Error("No se ingreso criterio de busqueda");
+    if (typeof criterio === "number") termino = criterio;
+    if (typeof criterio === "string")
+      termino = omitirAcentos(criterio.toLowerCase());
+
+    return usuarios.filter((usuario) => {
+      return (
+        omitirAcentos(usuario.nombre.toLowerCase()).includes(termino) ||
+        usuario.id === termino
+      );
+    });
+  },
+};
+
 // Omite acentos para criterio de busqueda
 function omitirAcentos(criterio) {
   return criterio
@@ -142,21 +190,36 @@ function omitirAcentos(criterio) {
     .replaceAll("ú", "u");
 }
 
-// // Demostraciones prácticas
-console.log("📚 LIBROS DISPONIBLES:");
-biblioteca.obtenerDisponibles().forEach(({ titulo, autor }) => {
-  console.log(`- "${titulo}" por ${autor}`);
+console.log("📚 USUARIOS REGISTRADOS:");
+console.log(usuario.obtenerUsuarios());
+
+console.log(biblioteca.prestar(1, 1));
+
+// console.log("\n🔍 BÚSQUEDA 'Juan':");
+// usuario.buscar("Juan").forEach(({ id, nombre, prestamos }) => {
+//   console.log(`- ${id}: ${nombre} (prestamos: ${prestamos.length})`);
+// });
+
+console.log("\n🔍 BÚSQUEDA 'Juan':");
+usuario.buscar("Juan").forEach((usuario) => {
+  console.log(usuario);
 });
+
+// // Demostraciones prácticas
+// console.log("📚 LIBROS DISPONIBLES:");
+// biblioteca.obtenerDisponibles().forEach(({ titulo, autor }) => {
+//   console.log(`- "${titulo}" por ${autor}`);
+// });
 
 // console.log("\n🔍 BÚSQUEDA 'JavaScript':");
 // biblioteca.buscar("JavaScript").forEach(({ titulo, autor }) => {
 //   console.log(`- "${titulo}" por ${autor}`);
 // });
 
-console.log("\n🔍 BÚSQUEDA 'Programación':");
-biblioteca.buscar("programacion").forEach(({ titulo, autor }) => {
-  console.log(`- "${titulo}" por ${autor}`);
-});
+// console.log("\n🔍 BÚSQUEDA 'Programación':");
+// biblioteca.buscar("programacion").forEach(({ titulo, autor }) => {
+//   console.log(`- "${titulo}" por ${autor}`);
+// });
 
 // console.log("\n📊 ESTADÍSTICAS:");
 // const stats = biblioteca.obtenerEstadisticas();
