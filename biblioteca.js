@@ -46,13 +46,15 @@ const biblioteca = {
     return libros.filter((libro) => libro.disponible);
   },
 
-  // Buscar libros por título o autor
+  // Buscar libros por título, autor o genero
   buscar(criterio) {
-    const termino = criterio.toLowerCase();
+    const termino = omitirAcentos(criterio.toLowerCase());
+
     return libros.filter(
       (libro) =>
-        libro.titulo.toLowerCase().includes(termino) ||
-        libro.autor.toLowerCase().includes(termino)
+        omitirAcentos(libro.titulo.toLowerCase()).includes(termino) ||
+        omitirAcentos(libro.autor.toLowerCase()).includes(termino) ||
+        omitirAcentos(libro.genero.toLocaleLowerCase()).includes(termino)
     );
   },
 
@@ -100,74 +102,89 @@ const biblioteca = {
   },
 };
 
-// Demostraciones prácticas
+// Omite acentos para criterio de busqueda
+function omitirAcentos(criterio) {
+  return criterio
+    .replaceAll("á", "a")
+    .replaceAll("é", "e")
+    .replaceAll("í", "i")
+    .replaceAll("ó", "o")
+    .replaceAll("ú", "u");
+}
+
+// // Demostraciones prácticas
 console.log("📚 LIBROS DISPONIBLES:");
 biblioteca.obtenerDisponibles().forEach(({ titulo, autor }) => {
   console.log(`- "${titulo}" por ${autor}`);
 });
 
-console.log("\n🔍 BÚSQUEDA 'JavaScript':");
-biblioteca.buscar("JavaScript").forEach(({ titulo, autor }) => {
+// console.log("\n🔍 BÚSQUEDA 'JavaScript':");
+// biblioteca.buscar("JavaScript").forEach(({ titulo, autor }) => {
+//   console.log(`- "${titulo}" por ${autor}`);
+// });
+
+console.log("\n🔍 BÚSQUEDA 'Programación':");
+biblioteca.buscar("programacion").forEach(({ titulo, autor }) => {
   console.log(`- "${titulo}" por ${autor}`);
 });
 
-console.log("\n📊 ESTADÍSTICAS:");
-const stats = biblioteca.obtenerEstadisticas();
-console.log(`Total de libros: ${stats.total}`);
-console.log(`Disponibles: ${stats.disponibles}`);
-console.log(`Prestados: ${stats.prestados}`);
-console.log("Por género:", stats.porGenero);
+// console.log("\n📊 ESTADÍSTICAS:");
+// const stats = biblioteca.obtenerEstadisticas();
+// console.log(`Total de libros: ${stats.total}`);
+// console.log(`Disponibles: ${stats.disponibles}`);
+// console.log(`Prestados: ${stats.prestados}`);
+// console.log("Por género:", stats.porGenero);
 
-console.log("\n📖 OPERACIONES DE PRÉSTAMO:");
-console.log(biblioteca.prestar(1).mensaje);
-console.log(biblioteca.prestar(1).mensaje); // Intento fallido
-console.log(biblioteca.devolver(1).mensaje);
+// console.log("\n📖 OPERACIONES DE PRÉSTAMO:");
+// console.log(biblioteca.prestar(1).mensaje);
+// console.log(biblioteca.prestar(1).mensaje); // Intento fallido
+// console.log(biblioteca.devolver(1).mensaje);
 
-console.log("\n=== DEMOSTRACIÓN DE DESTRUCTURING ===\n");
+// console.log("\n=== DEMOSTRACIÓN DE DESTRUCTURING ===\n");
 
-// Función que usa destructuring extensivamente
-function procesarPrestamo({ id, titulo, autor, disponible }) {
-  if (!disponible) {
-    return `❌ "${titulo}" no está disponible`;
-  }
+// // Función que usa destructuring extensivamente
+// function procesarPrestamo({ id, titulo, autor, disponible }) {
+//   if (!disponible) {
+//     return `❌ "${titulo}" no está disponible`;
+//   }
 
-  const resultado = biblioteca.prestar(id);
-  return resultado.exito
-    ? `✅ ${resultado.mensaje}`
-    : `❌ ${resultado.mensaje}`;
-}
+//   const resultado = biblioteca.prestar(id);
+//   return resultado.exito
+//     ? `✅ ${resultado.mensaje}`
+//     : `❌ ${resultado.mensaje}`;
+// }
 
-// Procesar múltiples libros con destructuring
-const librosParaProcesar = [
-  {
-    id: 1,
-    titulo: "JavaScript: The Good Parts",
-    autor: "Douglas Crockford",
-    disponible: true,
-  },
-  { id: 4, titulo: "1984", autor: "George Orwell", disponible: true },
-];
+// // Procesar múltiples libros con destructuring
+// const librosParaProcesar = [
+//   {
+//     id: 1,
+//     titulo: "JavaScript: The Good Parts",
+//     autor: "Douglas Crockford",
+//     disponible: true,
+//   },
+//   { id: 4, titulo: "1984", autor: "George Orwell", disponible: true },
+// ];
 
-librosParaProcesar.forEach((libro) => {
-  console.log(procesarPrestamo(libro));
-});
+// librosParaProcesar.forEach((libro) => {
+//   console.log(procesarPrestamo(libro));
+// });
 
-// Destructuring en bucles
-console.log("\n📋 LISTADO DE LIBROS CON DESTRUCTURING:");
-for (const { titulo, autor, genero, disponible } of libros) {
-  const estado = disponible ? "✅ Disponible" : "❌ Prestado";
-  console.log(`${titulo} - ${autor} (${genero}) ${estado}`);
-}
+// // Destructuring en bucles
+// console.log("\n📋 LISTADO DE LIBROS CON DESTRUCTURING:");
+// for (const { titulo, autor, genero, disponible } of libros) {
+//   const estado = disponible ? "✅ Disponible" : "❌ Prestado";
+//   console.log(`${titulo} - ${autor} (${genero}) ${estado}`);
+// }
 
-// Estadísticas avanzadas usando métodos modernos
-console.log("\n🎯 ANÁLISIS AVANZADO:");
-const librosPorGenero = libros.reduce((acc, { genero, disponible }) => {
-  if (!acc[genero]) acc[genero] = { total: 0, disponibles: 0 };
-  acc[genero].total++;
-  if (disponible) acc[genero].disponibles++;
-  return acc;
-}, {});
+// // Estadísticas avanzadas usando métodos modernos
+// console.log("\n🎯 ANÁLISIS AVANZADO:");
+// const librosPorGenero = libros.reduce((acc, { genero, disponible }) => {
+//   if (!acc[genero]) acc[genero] = { total: 0, disponibles: 0 };
+//   acc[genero].total++;
+//   if (disponible) acc[genero].disponibles++;
+//   return acc;
+// }, {});
 
-Object.entries(librosPorGenero).forEach(([genero, stats]) => {
-  console.log(`${genero}: ${stats.disponibles}/${stats.total} disponibles`);
-});
+// Object.entries(librosPorGenero).forEach(([genero, stats]) => {
+//   console.log(`${genero}: ${stats.disponibles}/${stats.total} disponibles`);
+// });
