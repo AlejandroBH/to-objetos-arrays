@@ -39,7 +39,37 @@ const libros = [
   },
 ];
 
-// Sistema de gestión
+// Base de datos de usuarios
+const usuarios = [
+  {
+    id: 1,
+    nombre: "Juan Perez",
+    edad: 25,
+    prestamos: [
+      {
+        idLibro: 1,
+        descripcion: "JavaScript: The Good Parts",
+        fechaEntrega: "",
+        FechaDevolucion: "",
+      },
+    ],
+  },
+  {
+    id: 2,
+    nombre: "Marcela Ayala",
+    edad: 42,
+    prestamos: [
+      {
+        idLibro: 3,
+        descripcion: "The Pragmatic Programmer",
+        fechaEntrega: "",
+        FechaDevolucion: "",
+      },
+    ],
+  },
+];
+
+// Sistema de gestión biblioteca
 const biblioteca = {
   // Obtener libros disponibles
   obtenerDisponibles() {
