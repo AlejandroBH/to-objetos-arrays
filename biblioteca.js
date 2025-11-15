@@ -8,6 +8,7 @@ const libros = [
     autor: "Douglas Crockford",
     genero: "Programación",
     disponible: true,
+    vecesSolicitado: 1,
   },
   {
     id: 2,
@@ -15,6 +16,7 @@ const libros = [
     autor: "Robert C. Martin",
     genero: "Programación",
     disponible: false,
+    vecesSolicitado: 1,
   },
   {
     id: 3,
@@ -22,6 +24,7 @@ const libros = [
     autor: "Andrew Hunt",
     genero: "Programación",
     disponible: true,
+    vecesSolicitado: 0,
   },
   {
     id: 4,
@@ -29,6 +32,7 @@ const libros = [
     autor: "George Orwell",
     genero: "Ficción",
     disponible: true,
+    vecesSolicitado: 0,
   },
   {
     id: 5,
@@ -36,6 +40,7 @@ const libros = [
     autor: "Harper Lee",
     genero: "Ficción",
     disponible: false,
+    vecesSolicitado: 1,
   },
 ];
 
@@ -50,13 +55,15 @@ const usuarios = [
         idLibro: 1,
         descripcion: "JavaScript: The Good Parts",
         fechaEntrega: new Date("2025-10-10"),
-        FechaDevolucion: new Date("2025-11-10"),
+        FechaDevolucion: new Date("2025-11-08"),
+        multa: 0,
       },
       {
         idLibro: 2,
         descripcion: "Clean Code",
         fechaEntrega: new Date("2025-10-10"),
         FechaDevolucion: undefined,
+        multa: 0,
       },
     ],
   },
@@ -70,6 +77,7 @@ const usuarios = [
         descripcion: "To Kill a Mockingbird",
         fechaEntrega: new Date("2025-11-14"),
         FechaDevolucion: undefined,
+        multa: 0,
       },
     ],
   },
@@ -114,9 +122,11 @@ const biblioteca = {
       descripcion: libro.titulo,
       fechaEntrega: new Date(),
       FechaDevolucion: undefined,
+      multa: 0,
     });
 
     libro.disponible = false;
+    libro.vecesSolicitado++;
 
     return {
       exito: true,
@@ -142,12 +152,26 @@ const biblioteca = {
     // Busca y encuentra indice en array de libros prestados
     const indexLibro = usuarioEncontrado[0].prestamos.findIndex(
       ({ idLibro, FechaDevolucion }) =>
-        idLibro === idLibro && FechaDevolucion === undefined
+        libro.id === idLibro && FechaDevolucion === undefined
     );
 
-    // Registra la fecha en la que el libro fue devuelto
-    usuarioEncontrado[0].prestamos[indexLibro].FechaDevolucion = new Date();
+    // Estimar fecha de devolucion en 30 dias a partir de la fecha de entrega
+    const registro = usuarioEncontrado[0].prestamos[indexLibro];
+    const FechaDevolucionEstimativa = new Date(registro.fechaEntrega);
+    FechaDevolucionEstimativa.setDate(registro.fechaEntrega.getDate() + 30);
 
+    // Obtener cantidad de dias extras para aplicar multa
+    const diferenciaDias = new Date() - FechaDevolucionEstimativa;
+    const diasTranscurridos = Math.floor(
+      diferenciaDias / (1000 * 60 * 60 * 24)
+    );
+
+    // Calcular total a pagar por concepto de multa ($500 CLP x dia)
+    const multa = diasTranscurridos >= 0 ? diasTranscurridos * 500 : 0;
+
+    // Registra la fecha en la que el libro fue devuelto
+    registro.multa = multa;
+    registro.FechaDevolucion = new Date();
     libro.disponible = true;
 
     return {
@@ -211,7 +235,7 @@ function omitirAcentos(criterio) {
 console.log("📚 USUARIOS REGISTRADOS:");
 console.log(usuario.obtenerUsuarios());
 
-console.log(biblioteca.prestar(3, 1));
+console.log(biblioteca.prestar(1, 1));
 console.log(biblioteca.devolver(2, 1));
 
 // console.log("\n🔍 BÚSQUEDA 'Juan':");
